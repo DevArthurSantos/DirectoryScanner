@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta http-equiv="Cache-control" content="cache">
+	<meta http-equiv="default-style" content="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" />
+	<title>Directory Scanner</title>
+</head>
+
+<body>
+
+	<div class="flex h-screen bg-zinc-800 items-center justify-center flex-col gap-2">
+
+		<div class="w-52">
+			<label for="URLDomin" class="block text-sm font-medium text-gray-900 dark:text-white">Url</label>
+			<input type="text" id="URLDomin"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+				placeholder="Ex.: https://site.com/" required>
+		</div>
+
+		<div class="w-52">
+			<label for="timeout" class="block text-sm font-medium text-gray-900 dark:text-white">Timeout</label>
+			<input type="number" value="5000" id="timeout"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+				placeholder="Min.: 5000" required>
+		</div>
+		<div class="w-52">
+			<label for="Division" class="block text-sm font-medium text-gray-900 dark:text-white">Division</label>
+			<input type="number" value="5" id="Division"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+				placeholder="Ex.: 10" required>
+		</div>
+		<div class="w-52">
+			<label for="Metod" class="block text-sm font-medium text-gray-900 dark:text-white">Metod</label>
+			<select id="Metod" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">
+				<option value="Source">Source</option>
+				<option value="Robots">Robots</option>
+				<option value="WordList">WordList</option>
+				<option value="Full">Full</option>
+			</select>
+		</div>
+		<div class="w-52">
+
+			<label for="Scan" class="block text-sm font-medium text-gray-900 dark:text-white">Scan</label>
+			<button id="Scan"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">Start
+				Scan</button>
+		</div>
+	</div>
+
+	<div id="resultContainer" style="visibility: hidden;"
+		class="w-screen h-screen fixed top-0 flex items-center justify-center flex-col">
+
+		<div class="flex items-center justify-between p-[15px]" style="width: 80vw;">
+			<label for="result" class="block text-sm font-medium text-gray-900 dark:text-white">Result</label>
+			<div class="flex gap-2">
+				<button id="copyResult" class="curs">Copy</button>
+				<button id="closeResultContainer" class="curs">X</button>
+			</div>
+		</div>
+
+		<div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg overflow-hidden overflow-y-auto"
+			style="height: 80vh; width: 80vw;">
+			<pre id="result" style="max-width: 100%;">
+			</pre>
+		</div>
+
+	</div>
+
+	<script>
+		const API = "http://localhost:3000"
+		const URLDomin = document.getElementById("URLDomin")
+		const timeout = document.getElementById("timeout")
+		const division = document.getElementById("Division")
+		const metod = document.getElementById("Metod")
+		const textAreaRes = document.getElementById("result")
+		const Scan = document.getElementById("Scan")
+		const resultContainer = document.getElementById("resultContainer")
+		const copyResult = document.getElementById("copyResult")
+		const closeResultContainer = document.getElementById("closeResultContainer")
+
+		async function postData() {
+			const response = await fetch(`${API}/${metod.value}Scan?timeout=${timeout.value}&division=${division.value}`, {
+				method: 'POST',
+				headers: {
+					'Access-Control-Allow-Origin': '*',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ url: URLDomin.value })
+			});
+			const data = await response.json();
+			console.log(data);
+			return data;
+		}
+
+		function closeResultContainerModal() {
+			resultContainer.style.visibility = "hidden"
+			closeResultContainer.removeEventListener
+		}
+
+		function copyResultJson() {
+
+
+			navigator.clipboard.writeText(textAreaRes.innerText);
+
+			alert("Copied the text");
+		}
+
+		Scan.addEventListener("click", async () => {
+			document.body.style.cursor = "wait"
+			const res = await postData()
+			textAreaRes.innerText = JSON.stringify(res, null, 2)
+			document.body.style.cursor = "auto"
+			resultContainer.style.visibility = "visible"
+
+			closeResultContainer.addEventListener("click", closeResultContainerModal)
+			copyResult.addEventListener("click", copyResultJson)
+		})
+	</script>
+
+	<script src="https://unpkg.com/popper.js@1/dist/umd/popper.min.js"></script>
+	<script src="https://unpkg.com/tippy.js@4"></script>
+</body>
+
+</html>
